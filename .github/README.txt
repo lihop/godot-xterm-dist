@@ -1,0 +1,2 @@
+Test which readme has precedence.
+README.txt
