@@ -2,7 +2,6 @@
 
 # GodotXterm 
 
-![Version](https://img.shields.io/badge/version-0.1.0-orange.svg)
 ![Godot Version](https://img.shields.io/badge/godot-3.2+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 [![Build Status](https://github.com/lihop/godot-xterm/workflows/build/badge.svg?branch=master)](https://github.com/lihop/godot-xterm/actions?query=branch%3Amaster)
@@ -33,7 +32,7 @@ To install, copy (or symlink) the `addons/godot_xterm` directory in this repo to
 
 ### Precompiled Binaries
 
-Precompiled binaries can be downloaded from the GitHub releases page. Download the `bin.zip` file and extract it to the `addons/godot_xterm/native/bin` directory. This will install the gdnative libraries for all supported platforms.
+Precompiled binaries can be downloaded from the GitHub releases page. Download the `libgodot-xterm-release.zip` (or `libgodot-xterm-debug.zip`) file and extract it to the `addons/godot_xterm/native/bin` directory. This will install the gdnative libraries for all supported platforms.
 After extracting the zip file, the directory should contain the following:
 - `libgodot-xterm.linux.64.so`
 - `libgodot-xterm.linux.32.so`
