@@ -8,28 +8,7 @@
 
 using namespace godot;
 
-// Use xterm default for default color palette.
-const uint8_t Terminal::default_color_palette[TSM_COLOR_NUM][3] = {
-	[TSM_COLOR_BLACK] = {0x00, 0x00, 0x00},
-	[TSM_COLOR_RED] = {0x80, 0x00, 0x00},
-	[TSM_COLOR_GREEN] = {0x00, 0x80, 0x00},
-	[TSM_COLOR_YELLOW] = {0x80, 0x80, 0x00},
-	[TSM_COLOR_BLUE] = {0x00, 0x00, 0x80},
-	[TSM_COLOR_MAGENTA] = {0x80, 0x00, 0x80},
-	[TSM_COLOR_CYAN] = {0x00, 0x80, 0x80},
-	[TSM_COLOR_LIGHT_GREY] = {0xc0, 0xc0, 0xc0},
-	[TSM_COLOR_DARK_GREY] = {0x80, 0x80, 0x80},
-	[TSM_COLOR_LIGHT_RED] = {0xff, 0x00, 0x00},
-	[TSM_COLOR_LIGHT_GREEN] = {0x00, 0xff, 0x00},
-	[TSM_COLOR_LIGHT_YELLOW] = {0xff, 0xff, 0x00},
-	[TSM_COLOR_LIGHT_BLUE] = {0x00, 0x00, 0xff},
-	[TSM_COLOR_LIGHT_MAGENTA] = {0xff, 0x00, 0xff},
-	[TSM_COLOR_LIGHT_CYAN] = {0x00, 0xff, 0xff},
-	[TSM_COLOR_WHITE] = {0xff, 0xff, 0xff},
-
-	[TSM_COLOR_FOREGROUND] = {0xff, 0xff, 0xff},
-	[TSM_COLOR_BACKGROUND] = {0x00, 0x00, 0x00},
-};
+const struct Terminal::cell Terminal::empty_cell = {{0, 0, 0, 0, 0}, {}};
 
 const std::map<std::pair<int64_t, int64_t>, uint32_t> Terminal::keymap = {
 
@@ -371,7 +350,7 @@ void Terminal::_draw()
 		return;
 
 	/* Draw the full terminal rect background */
-	draw_rect(get_rect(), get_color("Background", "Terminal"));
+	draw_rect(Rect2(Vector2(0, 0), get_rect().size), get_color("Background", "Terminal"));
 
 	for (int row = 0; row < rows; row++)
 	{
@@ -387,9 +366,6 @@ void Terminal::_draw()
 
 void Terminal::update_color_palette()
 {
-	// Start with a copy of the default color palette
-	memcpy(color_palette, Terminal::default_color_palette, sizeof(Terminal::default_color_palette));
-
 	/* Generate color palette based on theme */
 
 	// Converts a color from the Control's theme to one that can
@@ -585,9 +561,8 @@ void Terminal::write(Variant data)
 	case Variant::Type::STRING:
 	{
 		String string = data;
-		CharString utf8 = string.utf8();
-		u8 = utf8.get_data();
-		len = utf8.length();
+		u8 = string.alloc_c_string();
+		len = strlen(u8);
 		break;
 	}
 	default:

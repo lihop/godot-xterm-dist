@@ -1,8 +1,17 @@
 #include "pseudoterminal.h"
-#include <pty.h>
-#include <unistd.h>
+#include <libgen.h>
 #include <sys/wait.h>
 #include <termios.h>
+#include <unistd.h>
+
+// Platform specific includes.
+#if defined(PLATFORM_LINUX)
+#include <pty.h>
+#endif
+#if defined(PLATFORM_OSX)
+#include <util.h>
+#include <sys/ioctl.h>
+#endif
 
 using namespace godot;
 
@@ -69,7 +78,8 @@ void Pseudoterminal::process_pty()
         putenv(colortermenv);
 
         char *shell = getenv("SHELL");
-        execvp(shell, NULL);
+        char *argv[] = { basename(shell), NULL };
+        execvp(shell, argv);
     }
     else
     {

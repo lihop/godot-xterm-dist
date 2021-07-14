@@ -1,0 +1,91 @@
+name: build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [ build-nixos, build-archlinux, build-ubuntu ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build inside docker container
+        run: docker-compose run ${{ matrix.service }}
+
+  release-build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        platform: [ linux, osx, windows ]
+        bits: [ 64, 32 ]
+        include:
+          - platform: linux
+            os: ubuntu-latest
+          - platform: osx
+            os: macos-latest
+          - platform: windows
+            os: windows-latest
+        exclude:
+          - platform: osx
+            bits: 32 # Only 64-bit supported on macOS.
+          - platform: windows
+            bits: 32 # TODO: Enable 32-bit build on windows-latest.
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Get godot-cpp submodule commit hash
+        shell: bash
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+        run: |
+          echo ::set-env name=GODOT_CPP_COMMIT_HASH::$(git ls-tree HEAD addons/godot_xterm/native/external/godot-cpp -l | cut -d\  -f3)
+      - name: Cache godot-cpp bindings
+        uses: actions/cache@v2
+        id: cache
+        env:
+          cache-name: cache-godot-cpp
+        with:
+          path: addons/godot_xterm/native/external/godot-cpp
+          key: godot-cpp-${{ matrix.platform }}-release-${{ matrix.bits }}-${{ env.GODOT_CPP_COMMIT_HASH }}
+
+      - name: Install ubuntu build dependencies
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: sudo apt-get install -y scons gcc-multilib g++-multilib
+
+      - name: Install additional macos build dependencies
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: brew install scons
+
+      - name: Install additional windows build dependencies
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: choco install python3 && python -m pip install scons
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: ${{ matrix.os == 'windows-latest' }}
+
+      - name: Build godot-cpp bindings
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          cd addons/godot_xterm/native/external/godot-cpp
+          scons platform=${{ matrix.platform }} target=release bits=${{ matrix.bits }} generate_bindings=yes -j2
+
+      - name: Build libgodot-xterm
+        run: |
+          cd addons/godot_xterm/native
+          scons platform=${{ matrix.platform }} target=release bits=${{ matrix.bits }} -j2
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: bin
+          path: |
+            addons/godot_xterm/native/bin/*.so
+            addons/godot_xterm/native/bin/*.dylib
+            addons/godot_xterm/native/bin/*.dll
+

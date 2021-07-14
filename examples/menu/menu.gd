@@ -8,6 +8,7 @@ extends Control
 # - https://tldp.org/HOWTO/Bash-Prompt-HOWTO/x361.html
 # - https://www.youtube.com/watch?v=jTSQlIK_92w
 
+# Title generated using command: toilet -f pagga GODOT XTERM
 const TITLE = """
 ░█▀▀░█▀█░█▀▄░█▀█░▀█▀░░░█░█░▀█▀░█▀▀░█▀▄░█▄█\r
 ░█░█░█░█░█░█░█░█░░█░░░░▄▀▄░░█░░█▀▀░█▀▄░█░█\r
@@ -130,6 +131,10 @@ func _on_Terminal_key_pressed(data: String, event: InputEventKey) -> void:
 				$Terminal.grab_focus()
 				scene.queue_free()
 			"Terminal":
+				if OS.get_name() == "Windows":
+					return OS.call_deferred("alert", "Psuedoterminal node currently"
+							+ " uses pty.h but needs to use either winpty or conpty"
+							+ " to work on Windows.", "Terminal not Supported on Windows")
 				var scene = item.scene.instance()
 				var pty = scene.get_node("Pseudoterminal")
 				get_tree().get_root().add_child(scene)

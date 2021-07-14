@@ -1,3 +1,6 @@
 FROM archlinux:20200908
-RUN pacman -Sy --needed --noconfirm base-devel cmake scons
+RUN pacman -Sy --needed --noconfirm \
+    git \
+    scons \
+    base-devel
 COPY . /src
