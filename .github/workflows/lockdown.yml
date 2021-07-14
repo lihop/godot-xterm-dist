@@ -1,0 +1,21 @@
+name: 'Redirect pull requests'
+
+on:
+  pull_request:
+    types: [opened]
+  schedule:
+    - cron: '0 * * * *'
+
+permissions:
+  pull-requests: write
+
+jobs:
+  lockdown:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dessant/repo-lockdown@v2.1.1
+        with:
+          pr-comment: |
+            Thank you for your interest in contributing to GodotXterm. ❤️
+            However, this repository is for distribution only. 😞
+            You are welcome to open this pull request against the main project repository at https://github.com/lihop/godot-xterm/pulls. 😁
